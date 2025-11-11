@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Tracker</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; background: #f7f7f7; padding: 20px; }
+    h1 { color: #333; }
+    #status { margin: 10px 0; color: green; }
+    #map { width: 100%; height: 400px; margin-top: 20px; border-radius: 12px; }
+    input, button { margin: 5px; padding: 8px; border-radius: 8px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h1>📍 Live Tracker</h1>
+  <p id="status">Click "Start Tracking" and allow location access.</p>
+
+  <input id="serverUrl" type="text" placeholder="Send to server (POST URL)" style="width:90%">
+  <button id="startBtn">Start Tracking</button>
+
+  <div id="map"></div>
+
+  <script>
+    let watchId;
+    const statusEl = document.getElementById("status");
+    const startBtn = document.getElementById("startBtn");
+
+    async function sendLocation(lat, lon, accuracy) {
+      const url = document.getElementById("serverUrl").value.trim();
+      if (!url) return;
+
+      try {
+        await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            lat, lon, accuracy, timestamp: Date.now(),
+            userAgent: navigator.userAgent
+          })
+        });
+      } catch (err) {
+        console.error("Failed to send:", err);
+      }
+    }
+
+    startBtn.onclick = () => {
+      if (!navigator.geolocation) {
+        statusEl.textContent = "Geolocation not supported!";
+        return;
+      }
+
+      statusEl.textContent = "Getting location...";
+      watchId = navigator.geolocation.watchPosition(pos => {
+        const { latitude, longitude, accuracy } = pos.coords;
+        statusEl.textContent = `Lat: ${latitude}, Lon: ${longitude} (±${accuracy}m)`;
+        sendLocation(latitude, longitude, accuracy);
+      }, err => {
+        statusEl.textContent = "Location error: " + err.message;
+      }, { enableHighAccuracy: true });
+    };
+  </script>
+</body>
+</html>
