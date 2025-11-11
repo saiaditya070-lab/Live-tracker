@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Live Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body style="font-family: sans-serif; text-align: center;">
+    <h2>My Live Location</h2>
+    <p id="location">Fetching your location...</p>
+
+    <script>
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            document.getElementById("location").innerHTML =
+              "Latitude: " + pos.coords.latitude + "<br>Longitude: " + pos.coords.longitude;
+          },
+          (err) => {
+            document.getElementById("location").innerText =
+              "Error getting location: " + err.message;
+          }
+        );
+      } else {
+        document.getElementById("location").innerText = "Geolocation not supported";
+      }
+    </script>
+  </body>
+</html>
